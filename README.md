@@ -1,3 +1,5 @@
+![logo](https://github.com/user-attachments/assets/3f9cc2b8-307c-491f-bdb0-5d1755aa09f5)
+
 # Vehicle Detection and Tracking System
 
 ## Overview
