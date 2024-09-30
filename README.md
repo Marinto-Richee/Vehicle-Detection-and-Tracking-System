@@ -1,7 +1,7 @@
-![logo](https://github.com/user-attachments/assets/3f9cc2b8-307c-491f-bdb0-5d1755aa09f5)
-
-# Vehicle Detection and Tracking System
-
+<div style="display: flex; align-items: center;">
+    <img src="https://github.com/user-attachments/assets/3f9cc2b8-307c-491f-bdb0-5d1755aa09f5" alt="logo" width="100" height="100" style="margin-right: 20px;">
+    <h1>Vehicle Detection and Tracking System</h1>
+</div>
 ## Overview
 
 The Vehicle Detection and Tracking System is a web application designed to monitor and analyze vehicle movement using advanced object detection techniques. This project integrates real-time video streams from cameras to capture vehicle images, extract license plate information, and generate analytical reports.
