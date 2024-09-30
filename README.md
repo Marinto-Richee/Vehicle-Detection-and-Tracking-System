@@ -79,6 +79,24 @@ graph TD
     style D fill:#ffb,stroke:#333,stroke-width:4px
     style E fill:#fbf,stroke:#333,stroke-width:4px
 ```
+## Asynchronous Processing
+
+The system employs asynchronous processing to handle multiple tasks concurrently. This approach ensures that the application remains responsive and efficient, even when performing computationally intensive operations such as object detection and OCR.
+
+Key components of the asynchronous processing model include:
+
+- **Task Queues**: Tasks are queued and processed asynchronously to prevent blocking the main application thread.
+- **Worker Processes**: Separate worker processes handle tasks independently, allowing for parallel execution.
+- **Result Callbacks**: Upon task completion, the results are sent back to the main application for further processing or display.
+
+## Deployment
+
+This implmentation of the Vehicle Detection and Tracking System is designed to be deployed on a local server with Windows operating system. The following steps outline the deployment process:
+
+1. **Install Dependencies**: Ensure that all required dependencies, such as Python, Django, and PostgreSQL, are installed on the server.
+2. **Configure Settings**: Update the application settings, including database connection details, camera streams, and detection models.
+3. **Run the Application**: Use the autorun.vbs script to start the application automatically on system boot.
+4. **Access the Web Interface**: Open a web browser and navigate to the application URL to interact with the system.
 
 ## License
 
