@@ -1,6 +1,6 @@
 <div style="display: flex; align-items: center;">
     <img src="https://github.com/user-attachments/assets/3f9cc2b8-307c-491f-bdb0-5d1755aa09f5" alt="logo">
-    <h1>Vehicle Detection and Tracking System</h1>
+    <h1>Petra Infotech - AI-Powered Vehicle Detection and Tracking System</h1>
 </div>
 ## Overview
 
@@ -36,6 +36,15 @@ Key features of YOLOv8 include:
 - **High Accuracy**: Improved detection algorithms ensure high precision in identifying vehicles of various sizes and types.
 - **Flexible Configuration**: Supports different configurations based on the detection requirements and hardware capabilities.
 
+#### Our Models
+
+We have trained two custom models using YOLOv8 for vehicle detection:
+
+1. **Vehicle Detection**: This model is trained to detect vehicles in real-time from video streams. It identifies cars, trucks, and other types of vehicles with high accuracy.
+
+2. **License Plate Detection**: A specialized model for detecting license plates on vehicles. It extracts license plate information for further processing and analysis.
+
+
 ### Paddle OCR
 
 Paddle OCR is a powerful optical character recognition engine developed by PaddlePaddle. It provides robust text recognition capabilities across multiple languages and formats. In this project, Paddle OCR is utilized for license plate recognition.
@@ -70,11 +79,6 @@ graph TD
     style D fill:#ffb,stroke:#333,stroke-width:4px
     style E fill:#fbf,stroke:#333,stroke-width:4px
 ```
-
-
-## Contributing
-
-Contributions to the project are welcome! If you would like to contribute, please fork the repository and submit a pull request.
 
 ## License
 
