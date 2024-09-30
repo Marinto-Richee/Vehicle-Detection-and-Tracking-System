@@ -1,0 +1,80 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Configure Cameras - Petra InfoTech{% endblock %}
+
+{% block content %}
+<div class="card mt-5 no-hover  px-5">
+    <div class="header p-3">
+        <h2 class="text-center">Configure Cameras</h2>
+    </div>
+    <div class="card-body">
+        {% for camera in cameras %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{{ camera.name }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text"><strong>Category:</strong> {{ camera.category }}</p>
+                <p class="card-text"><strong>RTSP URL:</strong> {{ camera.rtsp }}</p>
+                
+                <!-- Update RTSP URL Form -->
+                <form method="post" action="{% url 'update_camera' camera.id %}" class="row mb-3">
+                    {% csrf_token %}
+                    <div class="col-lg-10 mb-2">
+                        <input type="text" class="form-control" name="rtsp" value="{{ camera.rtsp }}" required placeholder="Change RTSP URL">
+                    </div>
+                    <div class="col-lg-2 text-center">
+                        <button type="submit" class="btn btn-primary w-100">Update</button>
+                    </div>
+                </form>
+
+                <!-- Toggle Detection Form -->
+                <form method="post" action="{% url 'toggle_detection' camera.id %}">
+                    {% csrf_token %}
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" name="start_detection" id="startDetection{{ camera.id }}" 
+                               {% if camera.start_detection %}checked{% endif %} 
+                               onchange="this.form.submit()">
+                        <label class="form-check-label" for="startDetection{{ camera.id }}">
+                            {% if camera.start_detection %}Stop Detection{% else %}Start Detection{% endif %}
+                        </label>
+                    </div>
+                </form>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <a href="{% url 'configure_zones' camera.id %}" class="btn btn-secondary w-100">Configure Zones</a>
+                    </div>
+                    <!--
+                    <div class="col-lg-6">
+                        <form method="post" action="{% url 'delete_camera' camera.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100">Delete Camera</button>
+                        </form>
+                    </div>
+                    -->
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Add New Camera Section -->
+        {% if cameras.count < 2 %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0 text-center">Add New Camera</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success">Save Camera</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

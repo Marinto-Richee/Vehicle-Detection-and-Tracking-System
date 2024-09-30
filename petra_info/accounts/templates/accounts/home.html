@@ -1,0 +1,188 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Home - Petra InfoTech{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="header p-3">
+        <h2 class="text-center">Vehicle Detection Records & Analytics</h2>
+    </div>
+    
+    <!-- Filters for vehicle records -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="form-inline justify-content-center">
+                <div class="form-group mx-2">
+                    <label for="license_plate" class="mr-2">License Plate:</label>
+                    <input type="text" name="license_plate" class="form-control" value="{{ request.GET.license_plate }}" placeholder="Enter license plate">
+                </div>
+                <div class="form-group mx-2">
+                    <label for="start_date" class="mr-2">Start Date:</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+                </div>
+                <div class="form-group mx-2">
+                    <label for="end_date" class="mr-2">End Date:</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+                </div>
+                <button type="submit" class="btn btn-primary mx-2">Filter</button>
+                <a href="{% url 'export_excel' %}" class="btn btn-success m-2">Export to Excel</a>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Data visualizations -->
+    <div class="row mb-4">
+        <!-- Vehicle Activity By Hour -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Hourly Vehicle Activity</h5>
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vehicle Count Over Time -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Cumulative Vehicle Count</h5>
+                    <canvas id="vehicleCountChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <!-- Vehicle Detection by Day of Week -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Vehicle Detection by Day of the Week</h5>
+                    <canvas id="dayOfWeekChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- First-time vs Returning Vehicles -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">First-Time vs Returning Vehicles</h5>
+                    <canvas id="returningCustomersChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehicle Records Table -->
+    <div class="card mt-4 no-hover" >
+        <div class="card-body">
+            <h5 class="card-title text-center">Vehicle Detection Records</h5>
+            <table class="table table-bordered table-striped">
+                <thead class="thead-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>License Plate</th>
+                        <th>Timestamp</th>
+                        <th>Category</th>
+                        <th>Vehicle Image</th>
+                        <th>License Plate Image</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in vehicles %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ vehicle.license_plate }}</td>
+                            <td>{{ vehicle.timestamp }}</td>
+                            <td>{{ vehicle.camera }}</td>
+                            <td>
+                                {% if vehicle.image %}
+                                    <img src="{{ vehicle.image.url }}" alt="Vehicle Image" width="100" class="img-thumbnail">
+                                {% else %}
+                                    No Image
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if vehicle.license_plate_image %}
+                                    <img src="{{ vehicle.license_plate_image.url }}" alt="License Plate Image" width="100" class="img-thumbnail">
+                                {% else %}
+                                    No Image
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Hourly Activity Chart
+    var ctxHourly = document.getElementById('hourlyChart').getContext('2d');
+    var hourlyChart = new Chart(ctxHourly, {
+        type: 'line',
+        data: {
+            labels: {{ hourly_labels|safe }},
+            datasets: [{
+                label: 'Vehicle Count',
+                data: {{ hourly_data|safe }},
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: false
+            }]
+        }
+    });
+
+    // Vehicle Count Over Time
+    var ctxCount = document.getElementById('vehicleCountChart').getContext('2d');
+    var vehicleCountChart = new Chart(ctxCount, {
+        type: 'line',
+        data: {
+            labels: {{ cumulative_labels|safe }},
+            datasets: [{
+                label: 'Cumulative Vehicle Count',
+                data: {{ cumulative_data|safe }},
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 2,
+                fill: false
+            }]
+        }
+    });
+
+    // Vehicle Detection by Day of the Week
+    var ctxDayOfWeek = document.getElementById('dayOfWeekChart').getContext('2d');
+    var dayOfWeekChart = new Chart(ctxDayOfWeek, {
+        type: 'bar',
+        data: {
+            labels: {{ day_of_week_labels|safe }},
+            datasets: [{
+                label: 'Vehicle Count',
+                data: {{ day_of_week_data|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        }
+    });
+
+    // First-time vs Returning Vehicles
+    var ctxReturning = document.getElementById('returningCustomersChart').getContext('2d');
+    var returningCustomersChart = new Chart(ctxReturning, {
+        type: 'bar',
+        data: {
+            labels: ['First-Time', 'Returning'],
+            datasets: [{
+                label: 'Vehicle Count',
+                data: {{ returning_customers_data|safe }},
+                backgroundColor: ['rgba(255, 159, 64, 0.5)', 'rgba(75, 192, 192, 0.5)'],
+                borderColor: ['rgba(255, 159, 64, 1)', 'rgba(75, 192, 192, 1)'],
+                borderWidth: 1
+            }]
+        }
+    });
+</script>
+{% endblock %}

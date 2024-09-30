@@ -1,0 +1,39 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Add Camera - Petra InfoTech{% endblock %}
+
+{% block content %}
+    <h2 class="mt-5">Add Camera</h2>
+    <div class="card mt-3">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="alert alert-success mt-3" id="popup-message" style="display: none;">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('popup-message');
+            if (popup) {
+                popup.style.display = 'block'; // Show the popup
+                setTimeout(function() {
+                    popup.style.display = 'none'; // Hide the popup after 10 seconds
+                    window.location.href = "{% url 'config_cameras' %}"; // Redirect to the config page
+                }, 10000); // 10 seconds
+            }
+        });
+    </script>
+{% endblock %}

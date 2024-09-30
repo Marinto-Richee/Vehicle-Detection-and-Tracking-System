@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background-color: #f4f4f4; /* Light grey background for a modern look */
+            font-family: 'Arial', sans-serif; /* Clean and modern font */
+        }
+        .navbar {
+            background-color: #343a40;
+        }
+        .navbar a {
+            color: white; /* White text color */
+            font-weight: bold; /* Bold text */
+        }
+        .navbar a:hover {
+            color: #d0e7ff; /* Light blue on hover */
+        }
+        .card {
+            border-radius: 10px; /* Slightly rounded corners */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Softer shadow for a more modern feel */
+            transition: transform 0.3s; /* Smooth transition for hover effect */
+        }
+        .card:hover {
+            transform: scale(1.02); /* Subtle scaling on hover */
+        }
+        /* Disable hover effect for cards with the no-hover class */
+        .no-hover:hover {
+            transform: none; /* No scaling */
+            box-shadow: none; /* No shadow change */
+        }
+        .btn-custom {
+            background-color: #28a745; /* Green button for actions */
+            color: white;
+        }
+        .btn-custom:hover {
+            background-color: #218838; /* Darker green on hover */
+        }
+        .footer {
+            margin-top: 15px;
+            background-color: #343a40; /* Dark grey for footer */
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+        }
+        .footer p {
+            margin: 0; /* Remove margin for footer paragraphs */
+        }
+    </style>
+    <title>{% block title %}Petra InfoTech{% endblock %}</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <!--Logo from Media folder-->
+            
+            <a class="navbar-brand" href="{% url 'home' %}">Petra InfoTech</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home' %}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'config_cameras' %}">Configure Cameras</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer" style="background-color: #343a40; color: white; padding: 40px 0;">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5>Head Office</h5>
+                    <p>
+                        No.5, Shanthi Nagar 5th Cross,<br>
+                        Denkanikotta Rd, Opp. to Titan Eye Plus,<br>
+                        Hosur, Tamil Nadu 635 109
+                    </p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h5>Office</h5>
+                    <p>
+                        3rd Floor, No.12, JR Arcade,<br>
+                        80ft. Road, Koramangala, 1st Stage,<br>
+                        Bengaluru, Karnataka - 540 034, India
+                    </p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h5>Get in Touch</h5>
+                    <p>
+                        Phone: <a href="tel:+919524320212" style="color: #ffffff;">+91 95243 20212</a><br>
+                        Email: <a href="mailto:sales@petrainfotech.com" style="color: #ffffff;">sales@petrainfotech.com</a>
+                    </p>
+                </div>
+            </div>
+            <hr class="my-4" style="border-color: #ffffff;">
+            <p>Copyright &copy; {{ current_year }} Petra InfoTech. All Rights Reserved.</p>
+            <p>Developed by Petra InfoTech</p>
+        </div>
+    </footer>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
