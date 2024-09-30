@@ -53,3 +53,12 @@ class Vehicle(models.Model):
     def __str__(self):
         return self.license_plate
     
+
+
+class ScriptStatus(models.Model):
+    script_name = models.CharField(max_length=255)
+    status = models.CharField(max_length=50)  # e.g., "Running", "Stopped", "Error"
+    last_updated = models.DateTimeField(auto_now=True)  # Automatically updates with each status change
+
+    def __str__(self):
+        return f"{self.script_name}: {self.status}"

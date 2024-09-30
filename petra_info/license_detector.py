@@ -3,7 +3,7 @@ import os
 import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'petra_info.settings')
 django.setup()
-from accounts.models import Detection, tracker_status, Vehicle
+from accounts.models import Detection, tracker_status, Vehicle, ScriptStatus
 from datetime import timedelta
 from django.utils import timezone
 from django.core.files.base import ContentFile
@@ -187,6 +187,8 @@ def detect_license_plate():
      while True:
         # Get tracker statuses that are not completed
         trackers = tracker_status.objects.filter(completed=False)
+        ScriptStatus.objects.update_or_create(script_name="License Plate Model", status="Running")
+
         current_time = timezone.now()
         if trackers:
             for track in trackers:
@@ -237,4 +239,11 @@ def detect_license_plate():
         time.sleep(5)
 
 if __name__ == '__main__':
-    detect_license_plate()
+    try:
+        ScriptStatus.objects.update_or_create(script_name="License Plate Model", status="Running")
+        detect_license_plate()
+    except Exception as e:
+        ScriptStatus.objects.update_or_create(script_name="License Plate Model", status="Error")
+        
+
+

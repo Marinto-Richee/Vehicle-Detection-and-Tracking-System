@@ -3,7 +3,32 @@
 {% block title %}Configure Cameras - Petra InfoTech{% endblock %}
 
 {% block content %}
-<div class="card mt-5 no-hover  px-5">
+<div class="card mt-4 p-4 shadow-sm">
+    <h2 class="text-center mb-4">AI System</h2>
+    <div class="row">
+        {% for status in statuses %}
+        <div class="col-md-4 mb-3">
+            <div class="status-card p-3 shadow-sm rounded bg-light">
+                <h5 class="font-weight-bold">{{ status.script_name }}</h5>
+                <p class="mb-2">
+                    {% if status.status == "Running" %}
+                    <span class="badge badge-pill badge-success px-3 py-2">Running</span>
+                    {% elif status.status == "Stopped" %}
+                    <span class="badge badge-pill badge-secondary px-3 py-2">Stopped</span>
+                    {% elif status.status == "Error" %}
+                    <span class="badge badge-pill badge-danger px-3 py-2">Error</span>
+                    {% else %}
+                    <span class="badge badge-pill badge-warning px-3 py-2">{{ status.status }}</span>
+                    {% endif %}
+                </p>
+                <small class="text-muted">Last Updated: {{ status.last_updated|date:"Y-m-d H:i:s" }}</small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card mt-5 no-hover">
     <div class="header p-3">
         <h2 class="text-center">Configure Cameras</h2>
     </div>
@@ -16,12 +41,13 @@
             <div class="card-body">
                 <p class="card-text"><strong>Category:</strong> {{ camera.category }}</p>
                 <p class="card-text"><strong>RTSP URL:</strong> {{ camera.rtsp }}</p>
-                
+
                 <!-- Update RTSP URL Form -->
                 <form method="post" action="{% url 'update_camera' camera.id %}" class="row mb-3">
                     {% csrf_token %}
                     <div class="col-lg-10 mb-2">
-                        <input type="text" class="form-control" name="rtsp" value="{{ camera.rtsp }}" required placeholder="Change RTSP URL">
+                        <input type="text" class="form-control" name="rtsp" value="{{ camera.rtsp }}" required
+                            placeholder="Change RTSP URL">
                     </div>
                     <div class="col-lg-2 text-center">
                         <button type="submit" class="btn btn-primary w-100">Update</button>
@@ -32,9 +58,9 @@
                 <form method="post" action="{% url 'toggle_detection' camera.id %}">
                     {% csrf_token %}
                     <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" name="start_detection" id="startDetection{{ camera.id }}" 
-                               {% if camera.start_detection %}checked{% endif %} 
-                               onchange="this.form.submit()">
+                        <input class="form-check-input" type="checkbox" name="start_detection"
+                            id="startDetection{{ camera.id }}" {% if camera.start_detection %}checked{% endif %}
+                            onchange="this.form.submit()">
                         <label class="form-check-label" for="startDetection{{ camera.id }}">
                             {% if camera.start_detection %}Stop Detection{% else %}Start Detection{% endif %}
                         </label>
@@ -43,7 +69,8 @@
 
                 <div class="row">
                     <div class="col-lg-12">
-                        <a href="{% url 'configure_zones' camera.id %}" class="btn btn-secondary w-100">Configure Zones</a>
+                        <a href="{% url 'configure_zones' camera.id %}" class="btn btn-secondary w-100">Configure
+                            Zones</a>
                     </div>
                     <!--
                     <div class="col-lg-6">
@@ -59,8 +86,7 @@
         {% endfor %}
 
         <!-- Add New Camera Section -->
-        {% if cameras.count < 2 %}
-        <div class="card mt-4">
+        {% if cameras.count < 2 %} <div class="card mt-4">
             <div class="card-header">
                 <h5 class="mb-0 text-center">Add New Camera</h5>
             </div>
@@ -73,8 +99,8 @@
                     </div>
                 </form>
             </div>
-        </div>
-        {% endif %}
     </div>
+    {% endif %}
+</div>
 </div>
 {% endblock %}

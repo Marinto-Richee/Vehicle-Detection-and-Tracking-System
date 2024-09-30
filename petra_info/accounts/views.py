@@ -95,7 +95,7 @@ def home_view(request):
         'cumulative_labels': json.dumps(cumulative_labels),
         'cumulative_data': json.dumps(cumulative_counts),
         'returning_customers_data': json.dumps(returning_customers_data),
-        'current_year': current_year
+        'current_year': current_year,
     }
 
     return render(request, 'accounts/home.html', context)
@@ -155,6 +155,7 @@ def export_to_excel(request):
 @login_required
 def config_cameras(request):
     cameras = CCTV.objects.all()
+    statuses = ScriptStatus.objects.all()
 
     if request.method == 'POST':
         form = CCTVForm(request.POST)
@@ -164,7 +165,7 @@ def config_cameras(request):
     else:
         form = CCTVForm()
 
-    return render(request, 'accounts/config_cameras.html', {'cameras': cameras, 'form': form, 'current_year': current_year})
+    return render(request, 'accounts/config_cameras.html', {'cameras': cameras, 'form': form, 'current_year': current_year, "statuses":statuses})
 
 @login_required
 def delete_camera(request, camera_id):

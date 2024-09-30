@@ -44,3 +44,7 @@ class VehicleAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" style="width: 100px; height: auto;" />', obj.license_plate_image.url)
         return "No Image"
     license_plate_image.short_description = 'License Plate Image'
+
+@admin.register(ScriptStatus)
+class ScriptStatusAdmin(admin.ModelAdmin):
+    list_display = ('script_name', 'status')

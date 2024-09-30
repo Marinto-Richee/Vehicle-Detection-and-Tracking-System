@@ -29,7 +29,7 @@
             </form>
         </div>
     </div>
-    
+
     <!-- Data visualizations -->
     <div class="row mb-4">
         <!-- Vehicle Activity By Hour -->
@@ -76,47 +76,69 @@
     </div>
 
     <!-- Vehicle Records Table -->
-    <div class="card mt-4 no-hover" >
+    <div class="card mt-4 no-hover">
         <div class="card-body">
             <h5 class="card-title text-center">Vehicle Detection Records</h5>
-            <table class="table table-bordered table-striped">
-                <thead class="thead-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>License Plate</th>
-                        <th>Timestamp</th>
-                        <th>Category</th>
-                        <th>Vehicle Image</th>
-                        <th>License Plate Image</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for vehicle in vehicles %}
+            
+            <!-- Responsive Table Wrapper -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-light">
                         <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ vehicle.license_plate }}</td>
-                            <td>{{ vehicle.timestamp }}</td>
-                            <td>{{ vehicle.camera }}</td>
-                            <td>
-                                {% if vehicle.image %}
-                                    <img src="{{ vehicle.image.url }}" alt="Vehicle Image" width="100" class="img-thumbnail">
-                                {% else %}
-                                    No Image
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if vehicle.license_plate_image %}
-                                    <img src="{{ vehicle.license_plate_image.url }}" alt="License Plate Image" width="100" class="img-thumbnail">
-                                {% else %}
-                                    No Image
-                                {% endif %}
-                            </td>
+                            <th>ID</th>
+                            <th>License Plate</th>
+                            <th>Timestamp</th>
+                            <th>Category</th>
+                            <th>Vehicle Image</th>
+                            <th>License Plate Image</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for vehicle in vehicles %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ vehicle.license_plate }}</td>
+                                <td>{{ vehicle.timestamp }}</td>
+                                <td>{{ vehicle.camera }}</td>
+                                <td>
+                                    {% if vehicle.image %}
+                                        <img src="{{ vehicle.image.url }}" alt="Vehicle Image" width="100" class="img-fluid img-thumbnail" onclick="showEnlargedImage('{{ vehicle.image.url }}')">
+                                    {% else %}
+                                        No Image
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if vehicle.license_plate_image %}
+                                        <img src="{{ vehicle.license_plate_image.url }}" alt="License Plate Image" width="100" class="img-fluid img-thumbnail" onclick="showEnlargedImage('{{ vehicle.license_plate_image.url }}')">
+                                    {% else %}
+                                        No Image
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+    
+    <!-- Modal for Enlarged Image -->
+<div class="modal fade" id="enlargedImageModal" tabindex="-1" aria-labelledby="enlargedImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="enlargedImageModalLabel">Image</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body text-center">
+          <img id="enlargedImage" src="" alt="Enlarged Vehicle Image" class="img-fluid" />
+        </div>
+      </div>
+    </div>
+  </div>
+  
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -184,5 +206,16 @@
             }]
         }
     });
+
+    
 </script>
+<script>
+    function showEnlargedImage(imageUrl) {
+        // Set the src of the enlarged image in the modal
+        document.getElementById('enlargedImage').src = imageUrl;
+        // Show the modal
+        $('#enlargedImageModal').modal('show');
+    }
+</script>
+
 {% endblock %}

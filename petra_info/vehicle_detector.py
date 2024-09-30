@@ -2,7 +2,7 @@ import os
 import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'petra_info.settings')
 django.setup()
-from accounts.models import CCTV, LineZone, PolygonZone, Detection, tracker_status
+from accounts.models import CCTV, LineZone, PolygonZone, Detection, tracker_status, ScriptStatus
 import cv2
 from django.utils import timezone
 from django.core.files.base import ContentFile
@@ -24,7 +24,7 @@ def wait_for_cameras(camera):
         if camera.start_detection:
             break
         time.sleep(5)
-        print(f"Waiting for camera to start detection: {camera.name}")
+        ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera.name}", defaults={'status': 'Detection is Disabled'})
 
 def wait_for_zones(camera):
     """
@@ -40,7 +40,7 @@ def wait_for_zones(camera):
             break  # Exit the loop once both zones are available
         except (LineZone.DoesNotExist, PolygonZone.DoesNotExist):
             # If zones are not available, wait and retry
-            print(f"Waiting for zones to be configured for camera: {camera.name}")
+            ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera.name}", defaults={'status': 'Zones are not available'})
             time.sleep(5)  # Wait for 5 seconds before checking again
 
     return line_zone, polygon_zone
@@ -51,8 +51,9 @@ def wait_for_stream(camera):
     """
     while True:
         try:
-            # Try opening the camera stream
+            camera = CCTV.objects.get(name=camera.name)
             cap = cv2.VideoCapture(camera.rtsp)
+            ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera}", defaults={'status': 'Invalid Stream'})
             if cap.isOpened():
                 cap.release()
                 break  # Exit the loop if the stream is available
@@ -88,6 +89,7 @@ def process_camera_stream(camera_id):
     line_zone = sv.LineZone(start=start_point, end=end_point, triggering_anchors=[sv.Position.BOTTOM_CENTER])
     polygon_zone = sv.PolygonZone(polygon=polygon_points)
     while cap.isOpened():
+        ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera_id}", defaults={'status': 'Running'})
         wait_for_cameras(camera)
         success, frame = cap.read()
         if not success:
@@ -142,4 +144,8 @@ if __name__ == '__main__':
     # get arguments from command line
     import sys
     camera_id = sys.argv[1]
-    process_camera_stream(camera_id)
+    try:
+        ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera_id}", defaults={'status': 'Running'})
+        process_camera_stream(camera_id)
+    except Exception as e:
+        ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera_id}", defaults={'status': 'Error'})
