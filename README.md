@@ -1,5 +1,5 @@
 <div style="display: flex; align-items: center;">
-    <img src="https://github.com/user-attachments/assets/3f9cc2b8-307c-491f-bdb0-5d1755aa09f5" alt="logo" width="100" height="100" style="margin-right: 20px;">
+    <img src="https://github.com/user-attachments/assets/3f9cc2b8-307c-491f-bdb0-5d1755aa09f5" alt="logo">
     <h1>Vehicle Detection and Tracking System</h1>
 </div>
 ## Overview
