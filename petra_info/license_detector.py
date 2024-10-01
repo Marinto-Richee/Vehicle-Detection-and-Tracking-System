@@ -111,6 +111,7 @@ def correct_number_plate(number):
     
 def get_number(number_plate):
     result = ocr.ocr(number_plate)
+    state_codes=["TN","AP","KA","KL","DL","MH","GJ","RJ","UP","MP","HR","PB","WB","BR","OR","AS","JH","UK","HP","TR","ML","MZ","NL","SK","AR","AN","CH","DN","DD","LD","PY","JK","LA","CG","TS"]
     if None in result:
         return "UNKNOWN"
     if len(result) == 0 or len(result[0]) < 2:
@@ -119,6 +120,13 @@ def get_number(number_plate):
     number_plate_text = re.sub(r'[^a-zA-Z0-9]', '', number_plate_text)
     if len(number_plate_text) == 10 or len(number_plate_text) == 9:
         return number_plate_text
+    else:
+        for state_code in state_codes:
+            if state_code in number_plate_text:
+                index = number_plate_text.index(state_code)
+                number_plate_text = number_plate_text[index:]
+                if len(number_plate_text) == 10 or len(number_plate_text) == 9:
+                    return number_plate_text
     return "UNKNOWN"
 
 def process_images(tracker_id,padding=30):
@@ -196,8 +204,8 @@ def detect_license_plate():
                 last_detection_time = track.last_detection_time
                 # Check if 30 seconds have passed since the last detection
                 time_since_last_detection = current_time - last_detection_time
-                if time_since_last_detection >= timedelta(seconds=30):
-                    print(f"Processing tracker: {tracker_id} after waiting 30 seconds")
+                if time_since_last_detection >= timedelta(seconds=20):
+                    print(f"Processing tracker: {tracker_id} after waiting 20 seconds")
                     
                     # Perform license plate detection
                     number_plate, largest_orginal_image, largest_license_plate = process_images(tracker_id)     

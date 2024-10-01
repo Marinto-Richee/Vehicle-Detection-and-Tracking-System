@@ -68,8 +68,8 @@
         <div class="col-md-6 mb-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title text-center">First-Time vs Returning Vehicles</h5>
-                    <canvas id="returningCustomersChart"></canvas>
+                    <h5 class="card-title text-center">Completed VS Pending Data</h5>
+                    <canvas id="completedPendingChart"></canvas>
                 </div>
             </div>
         </div>
@@ -191,24 +191,42 @@
         }
     });
 
-    // First-time vs Returning Vehicles
-    var ctxReturning = document.getElementById('returningCustomersChart').getContext('2d');
-    var returningCustomersChart = new Chart(ctxReturning, {
+    var ctx = document.getElementById('completedPendingChart').getContext('2d');
+    var completedPendingBarChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['First-Time', 'Returning'],
+            labels: ['Completed', 'Pending'],
             datasets: [{
-                label: 'Vehicle Count',
-                data: {{ returning_customers_data|safe }},
-                backgroundColor: ['rgba(255, 159, 64, 0.5)', 'rgba(75, 192, 192, 0.5)'],
-                borderColor: ['rgba(255, 159, 64, 1)', 'rgba(75, 192, 192, 1)'],
+                label: 'Vehicle Status',
+                data: {{ completed_pending_data|safe }},
+                backgroundColor: ['rgba(75, 192, 192, 1)', 'rgba(54, 162, 235, 1)'],  // Green for completed, red for pending
+                hoverBackgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(54, 162, 235, 0.5)'],
                 borderWidth: 1
             }]
+        },
+        options: {
+            responsive: true,
+            indexAxis: 'y',  // This makes it horizontal
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0  // Make sure we don't get decimal values for counts
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Completed vs Pending Vehicles'
+                }
+            }
         }
     });
 
     
 </script>
+
 <script>
     function showEnlargedImage(imageUrl) {
         // Set the src of the enlarged image in the modal

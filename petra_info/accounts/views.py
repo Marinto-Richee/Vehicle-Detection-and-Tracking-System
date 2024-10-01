@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from .models import *
 from .forms import CCTVForm
@@ -67,7 +67,6 @@ def home_view(request):
     for data in hourly_data:
         hourly_counts[int(data['hour'])] = data['count']  # Ensure the index is an integer
 
-
     # Vehicle detection by day of the week
     day_of_week_data = vehicles.extra(select={'day_of_week': 'EXTRACT(DOW FROM timestamp)'}).values('day_of_week').annotate(count=Count('id'))
     day_of_week_labels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -80,11 +79,22 @@ def home_view(request):
     cumulative_labels = [entry['date_only'].strftime('%Y-%m-%d') for entry in cumulative_data]
     cumulative_counts = list(Counter({entry['date_only']: entry['count'] for entry in cumulative_data}).values())
 
-    # First-time vs Returning customers (based on license plates)
-    license_plate_count = vehicles.values('license_plate').annotate(count=Count('id')).order_by('license_plate')
-    first_time_count = sum(1 for vehicle in license_plate_count if vehicle['count'] == 1)
-    returning_count = len(license_plate_count) - first_time_count
-    returning_customers_data = [first_time_count, returning_count]
+    # Completed vs Pending vehicles logic
+    completed_vehicles = 0
+    pending_vehicles = 0
+
+    # We group by license_plate and ensure that each vehicle has both "In" and "Out"
+    for license_plate in vehicles.values('license_plate').distinct():
+        in_entries = vehicles.filter(license_plate=license_plate['license_plate'], camera='In').count()
+        out_entries = vehicles.filter(license_plate=license_plate['license_plate'], camera='Out').count()
+
+        if in_entries > 0 and out_entries > 0:
+            completed_vehicles += 1
+        elif in_entries > out_entries:
+            pending_vehicles += 1
+
+    # Data for Completed vs Pending chart
+    completed_pending_data = [completed_vehicles, pending_vehicles]
 
     context = {
         'vehicles': vehicles,
@@ -94,7 +104,7 @@ def home_view(request):
         'day_of_week_data': json.dumps(day_of_week_counts),
         'cumulative_labels': json.dumps(cumulative_labels),
         'cumulative_data': json.dumps(cumulative_counts),
-        'returning_customers_data': json.dumps(returning_customers_data),
+        'completed_pending_data': json.dumps(completed_pending_data),  # New data for chart
         'current_year': current_year,
     }
 
