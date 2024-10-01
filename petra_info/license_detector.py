@@ -120,13 +120,13 @@ def get_number(number_plate):
     number_plate_text = re.sub(r'[^a-zA-Z0-9]', '', number_plate_text)
     if len(number_plate_text) == 10 or len(number_plate_text) == 9:
         return number_plate_text
-    else:
+    '''else:
         for state_code in state_codes:
             if state_code in number_plate_text:
                 index = number_plate_text.index(state_code)
                 number_plate_text = number_plate_text[index:]
                 if len(number_plate_text) == 10 or len(number_plate_text) == 9:
-                    return number_plate_text
+                    return number_plate_text'''
     return "UNKNOWN"
 
 def process_images(tracker_id,padding=30):
@@ -139,14 +139,14 @@ def process_images(tracker_id,padding=30):
     tracker_object = tracker_status.objects.get(tracker_id=tracker_id)
     for detection in Detection.objects.filter(tracker=tracker_object):
         image = cv2.imdecode(np.frombuffer(detection.image.read(), np.uint8), cv2.IMREAD_COLOR)
-        while True:
+        '''while True:
             try:
                 detection.image.delete()
                 detection.delete()
                 break
             except Exception as e:
                 print(f"Error deleting image: {e}")
-                time.sleep(5)
+                time.sleep(5)'''
         # calculate the area of the image
         area = image.shape[0]*image.shape[1]
         if area > largest_orginal_image_area:
@@ -195,7 +195,12 @@ def detect_license_plate():
      while True:
         # Get tracker statuses that are not completed
         trackers = tracker_status.objects.filter(completed=False)
-        ScriptStatus.objects.update_or_create(script_name="License Plate Model", status="Running")
+        if not ScriptStatus.objects.filter(script_name="License Plate Model").exists():
+            ScriptStatus.objects.create(script_name="License Plate Model", status="Running")
+        else: 
+            obj=ScriptStatus.objects.get(script_name="License Plate Model")
+            obj.status="Running"
+            obj.save()
 
         current_time = timezone.now()
         if trackers:
@@ -209,7 +214,7 @@ def detect_license_plate():
                     
                     # Perform license plate detection
                     number_plate, largest_orginal_image, largest_license_plate = process_images(tracker_id)     
-                    
+                    print(f"Number plate: {number_plate}")
                     # Encode the NumPy arrays (images) into JPEG format
                     if largest_orginal_image is not None:
                         _, original_image_buffer = cv2.imencode('.jpg', largest_orginal_image)
@@ -229,7 +234,7 @@ def detect_license_plate():
                             image=original_image_file,  # Save original image
                             license_plate_image=license_plate_image_file  # Save license plate image
                         )
-                    elif largest_orginal_image is not None and largest_license_plate is not None:
+                    elif largest_orginal_image is not None:
                         Vehicle.objects.create(
                             timestamp=timezone.now(),
                             camera=track.category,
@@ -238,9 +243,9 @@ def detect_license_plate():
                             license_plate_image=license_plate_image_file
                         )
                     # delete the tracker status
-                    track.completed = True
-                    track.save()
-                    tracker_status.objects.filter(tracker_id=tracker_id).delete()
+                    #track.completed = True
+                    #track.save()
+                    #tracker_status.objects.filter(tracker_id=tracker_id).delete()
 
         else:
             print("No new trackers to process")
@@ -248,10 +253,23 @@ def detect_license_plate():
 
 if __name__ == '__main__':
     try:
-        ScriptStatus.objects.update_or_create(script_name="License Plate Model", status="Running")
+        # check if ScriptStatus object exists for License Plate Model
+        if not ScriptStatus.objects.filter(script_name="License Plate Model").exists():
+            ScriptStatus.objects.create(script_name="License Plate Model", status="Running")
+        else: 
+            obj=ScriptStatus.objects.get(script_name="License Plate Model")
+            obj.status="Running"
+            obj.save()
+
         detect_license_plate()
     except Exception as e:
-        ScriptStatus.objects.update_or_create(script_name="License Plate Model", status="Error")
+        print(f"Error: {e}")
+        if ScriptStatus.objects.filter(script_name="License Plate Model").exists():
+            obj=ScriptStatus.objects.get(script_name="License Plate Model")
+            obj.status="Error"
+            obj.save()
+        else:
+            ScriptStatus.objects.create(script_name="License Plate Model", status="Error")
         
 
 

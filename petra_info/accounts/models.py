@@ -56,6 +56,7 @@ class Vehicle(models.Model):
 
 
 class ScriptStatus(models.Model):
+    id = models.AutoField(primary_key=True)
     script_name = models.CharField(max_length=255)
     status = models.CharField(max_length=50)  # e.g., "Running", "Stopped", "Error"
     last_updated = models.DateTimeField(auto_now=True)  # Automatically updates with each status change
