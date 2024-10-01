@@ -24,6 +24,14 @@ number_plate_model = YOLO("best.pt")
 dict_int_to_char={'0':"O",'1':"I",'2':"Z",'3':"B",'4':"A",'5':"S",'6':"G",'7':"T",'8':"B",'9':"G"}
 dict_char_to_int={'O':"0",'I':"1",'Z':"2",'B':"3",'A':"4",'S':"5",'G':"6",'T':"7",'B':"8",'G':"9"}
 
+def update_script_status(status):
+    if not ScriptStatus.objects.filter(script_name="License Plate Model").exists():
+        ScriptStatus.objects.create(script_name="License Plate Model", status=status)
+    else: 
+        obj=ScriptStatus.objects.get(script_name="License Plate Model")
+        obj.status=status
+        obj.save()
+
 def correct_number_plate(number):
     # check the following conditions
         # 1. Number plate should have atleast 9 characters and atmost 10 characters
@@ -139,14 +147,14 @@ def process_images(tracker_id,padding=30):
     tracker_object = tracker_status.objects.get(tracker_id=tracker_id)
     for detection in Detection.objects.filter(tracker=tracker_object):
         image = cv2.imdecode(np.frombuffer(detection.image.read(), np.uint8), cv2.IMREAD_COLOR)
-        '''while True:
+        while True:
             try:
                 detection.image.delete()
                 detection.delete()
                 break
             except Exception as e:
                 print(f"Error deleting image: {e}")
-                time.sleep(5)'''
+                time.sleep(5)
         # calculate the area of the image
         area = image.shape[0]*image.shape[1]
         if area > largest_orginal_image_area:
@@ -195,13 +203,7 @@ def detect_license_plate():
      while True:
         # Get tracker statuses that are not completed
         trackers = tracker_status.objects.filter(completed=False)
-        if not ScriptStatus.objects.filter(script_name="License Plate Model").exists():
-            ScriptStatus.objects.create(script_name="License Plate Model", status="Running")
-        else: 
-            obj=ScriptStatus.objects.get(script_name="License Plate Model")
-            obj.status="Running"
-            obj.save()
-
+        update_script_status("Running")
         current_time = timezone.now()
         if trackers:
             for track in trackers:
@@ -243,9 +245,9 @@ def detect_license_plate():
                             license_plate_image=license_plate_image_file
                         )
                     # delete the tracker status
-                    #track.completed = True
-                    #track.save()
-                    #tracker_status.objects.filter(tracker_id=tracker_id).delete()
+                    track.completed = True
+                    track.save()
+                    tracker_status.objects.filter(tracker_id=tracker_id).delete()
 
         else:
             print("No new trackers to process")
@@ -253,23 +255,11 @@ def detect_license_plate():
 
 if __name__ == '__main__':
     try:
-        # check if ScriptStatus object exists for License Plate Model
-        if not ScriptStatus.objects.filter(script_name="License Plate Model").exists():
-            ScriptStatus.objects.create(script_name="License Plate Model", status="Running")
-        else: 
-            obj=ScriptStatus.objects.get(script_name="License Plate Model")
-            obj.status="Running"
-            obj.save()
-
+        update_script_status("Running")
         detect_license_plate()
     except Exception as e:
         print(f"Error: {e}")
-        if ScriptStatus.objects.filter(script_name="License Plate Model").exists():
-            obj=ScriptStatus.objects.get(script_name="License Plate Model")
-            obj.status="Error"
-            obj.save()
-        else:
-            ScriptStatus.objects.create(script_name="License Plate Model", status="Error")
+        update_script_status("Error")
         
 
 

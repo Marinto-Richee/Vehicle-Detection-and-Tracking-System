@@ -17,6 +17,12 @@ names = model.names
 tracker = sv.ByteTrack()
 smoother = sv.DetectionsSmoother()
 
+def update_script_status(script_name, status):
+    if ScriptStatus.objects.filter(script_name=script_name).exists():
+        ScriptStatus.objects.update_or_create(script_name=script_name, defaults={'status': status})
+    else:
+        ScriptStatus.objects.create(script_name=script_name, status=status)
+
 def wait_for_cameras(camera):
     # check start_detection status
     while True:
@@ -24,8 +30,7 @@ def wait_for_cameras(camera):
         if camera.start_detection:
             break
         time.sleep(5)
-        ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera.name}", defaults={'status': 'Detection is Disabled'})
-
+        update_script_status(f"Detection Model - {camera.name}", 'Waiting for start detection')
 def wait_for_zones(camera):
     """
     Function to wait for the Polygon and Line zones to be available for the camera.
@@ -40,7 +45,7 @@ def wait_for_zones(camera):
             break  # Exit the loop once both zones are available
         except (LineZone.DoesNotExist, PolygonZone.DoesNotExist):
             # If zones are not available, wait and retry
-            ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera.name}", defaults={'status': 'Zones are not available'})
+            update_script_status(f"Detection Model - {camera.name}", 'Waiting for zones')
             time.sleep(5)  # Wait for 5 seconds before checking again
 
     return line_zone, polygon_zone
@@ -53,7 +58,7 @@ def wait_for_stream(camera):
         try:
             camera = CCTV.objects.get(name=camera.name)
             cap = cv2.VideoCapture(camera.rtsp)
-            ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera}", defaults={'status': 'Invalid Stream'})
+            update_script_status(f"Detection Model - {camera.name}", 'Waiting for stream')
             if cap.isOpened():
                 cap.release()
                 break  # Exit the loop if the stream is available
@@ -89,7 +94,7 @@ def process_camera_stream(camera_id):
     line_zone = sv.LineZone(start=start_point, end=end_point, triggering_anchors=[sv.Position.BOTTOM_CENTER])
     polygon_zone = sv.PolygonZone(polygon=polygon_points)
     while cap.isOpened():
-        ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera_id}", defaults={'status': 'Running'})
+        update_script_status(f"Detection Model - {camera.name}", 'Running')
         wait_for_cameras(camera)
         success, frame = cap.read()
         if not success:
@@ -145,7 +150,7 @@ if __name__ == '__main__':
     import sys
     camera_id = sys.argv[1]
     try:
-        ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera_id}", defaults={'status': 'Running'})
+        update_script_status(f"Detection Model - {camera_id}", 'Running')
         process_camera_stream(camera_id)
     except Exception as e:
-        ScriptStatus.objects.update_or_create(script_name=f"Detection Model - {camera_id}", defaults={'status': 'Error'})
+        update_script_status(f"Detection Model - {camera_id}", 'Error')
