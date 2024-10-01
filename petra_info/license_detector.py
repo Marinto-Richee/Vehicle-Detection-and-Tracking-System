@@ -128,13 +128,13 @@ def get_number(number_plate):
     number_plate_text = re.sub(r'[^a-zA-Z0-9]', '', number_plate_text)
     if len(number_plate_text) == 10 or len(number_plate_text) == 9:
         return number_plate_text
-    '''else:
+    else:
         for state_code in state_codes:
             if state_code in number_plate_text:
                 index = number_plate_text.index(state_code)
                 number_plate_text = number_plate_text[index:]
                 if len(number_plate_text) == 10 or len(number_plate_text) == 9:
-                    return number_plate_text'''
+                    return number_plate_text
     return "UNKNOWN"
 
 def process_images(tracker_id,padding=30):
@@ -190,8 +190,10 @@ def process_images(tracker_id,padding=30):
                 if number!="UNKNOWN" and number[:2].isalpha() and number[2:4].isdigit() and number[-4:].isdigit() and number[4:-4].isalpha() and len(number) >= 9 and len(number) <= 10:
                     predictions.append((number,changes))      
     # most repeated number plate is the correct number
-    if len(predictions) == 0:
-        return  "UNKNOWN",largest_orginal_image, None
+    if largest_license_plate is None:
+        return "UNREGISTERED",largest_orginal_image, None
+    elif len(predictions) == 0:
+        return  "UNKNOWN",largest_orginal_image, largest_license_plate
     elif len(predictions) == 1:
         return predictions[0][0] , largest_orginal_image, largest_license_plate
     else:
@@ -213,10 +215,9 @@ def detect_license_plate():
                 time_since_last_detection = current_time - last_detection_time
                 if time_since_last_detection >= timedelta(seconds=20):
                     print(f"Processing tracker: {tracker_id} after waiting 20 seconds")
-                    
                     # Perform license plate detection
                     number_plate, largest_orginal_image, largest_license_plate = process_images(tracker_id)     
-                    print(f"Number plate: {number_plate}")
+                    
                     # Encode the NumPy arrays (images) into JPEG format
                     if largest_orginal_image is not None:
                         _, original_image_buffer = cv2.imencode('.jpg', largest_orginal_image)
@@ -236,13 +237,21 @@ def detect_license_plate():
                             image=original_image_file,  # Save original image
                             license_plate_image=license_plate_image_file  # Save license plate image
                         )
-                    elif largest_orginal_image is not None:
+                    elif largest_orginal_image is not None and largest_license_plate is not None:
+                        Vehicle.objects.create(
+                            timestamp=timezone.now(),
+                            camera=track.category,
+                            license_plate="UNKNOWN",
+                            image=original_image_file,
+                            license_plate_image=largest_license_plate
+                        )
+                    elif largest_license_plate is None:
                         Vehicle.objects.create(
                             timestamp=timezone.now(),
                             camera=track.category,
                             license_plate="UNREGISTERED",
                             image=original_image_file,
-                            license_plate_image=license_plate_image_file
+                            license_plate_image=None
                         )
                     # delete the tracker status
                     track.completed = True
@@ -254,6 +263,7 @@ def detect_license_plate():
         time.sleep(5)
 
 if __name__ == '__main__':
+    detect_license_plate()
     try:
         update_script_status("Running")
         detect_license_plate()
