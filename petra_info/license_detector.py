@@ -138,6 +138,7 @@ def get_number(number_plate):
     return "UNKNOWN"
 
 def process_images(tracker_id,padding=30):
+    image_names = []
     print(f"Processing images for tracker: {tracker_id}")
     predictions = []
     largest_orginal_image = None
@@ -147,9 +148,9 @@ def process_images(tracker_id,padding=30):
     tracker_object = tracker_status.objects.get(tracker_id=tracker_id)
     for detection in Detection.objects.filter(tracker=tracker_object):
         image = cv2.imdecode(np.frombuffer(detection.image.read(), np.uint8), cv2.IMREAD_COLOR)
+        image_names.append(detection.image.name)
         while True:
             try:
-                detection.image.delete()
                 detection.delete()
                 break
             except Exception as e:
@@ -188,7 +189,13 @@ def process_images(tracker_id,padding=30):
             else:
                 number,changes = correct_number_plate(number)
                 if number!="UNKNOWN" and number[:2].isalpha() and number[2:4].isdigit() and number[-4:].isdigit() and number[4:-4].isalpha() and len(number) >= 9 and len(number) <= 10:
-                    predictions.append((number,changes))      
+                    predictions.append((number,changes))  
+    # Delete the images
+    for image_name in image_names:
+        try:
+            os.remove(image_name)
+        except Exception as e:
+            print(f"Error deleting image: {e}")    
     # most repeated number plate is the correct number
     if largest_license_plate is None:
         return "UNREGISTERED",largest_orginal_image, None
